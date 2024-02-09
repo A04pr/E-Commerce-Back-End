@@ -3,9 +3,16 @@ const { Category, Product } = require('../../models');
 
 // The `/api/categories` endpoint
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   // find all categories
   // be sure to include its associated Products
+  try {
+    const categories = await Category.findAll();
+    res.json(categories);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 router.get('/:id', (req, res) => {
@@ -13,8 +20,16 @@ router.get('/:id', (req, res) => {
   // be sure to include its associated Products
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   // create a new category
+  const { category_name } = req.body;
+  try {
+    const newCategory = await Category.create({ category_name });
+    res.status(201).json(newCategory);
+  } catch (error) {
+    console.error('Error adding category:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 router.put('/:id', (req, res) => {
