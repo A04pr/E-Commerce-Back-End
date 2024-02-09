@@ -3,9 +3,16 @@ const { Tag, Product, ProductTag } = require('../../models');
 
 // The `/api/tags` endpoint
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   // find all tags
   // be sure to include its associated Product data
+  try {
+    const tags = await Tag.findAll();
+    res.json(tags);
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 router.get('/:id', (req, res) => {
@@ -13,8 +20,16 @@ router.get('/:id', (req, res) => {
   // be sure to include its associated Product data
 });
 
-router.post('/', (req, res) => {
+router.post('/', async(req, res) => {
   // create a new tag
+  const { tag_name } = req.body;
+  try {
+    const newTag = await Tag.create({ tag_name });
+    res.status(201).json(newTag);
+  } catch (error) {
+    console.error('Error adding tag:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 router.put('/:id', (req, res) => {
