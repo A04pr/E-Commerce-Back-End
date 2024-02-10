@@ -3,11 +3,12 @@ const { Tag, Product, ProductTag } = require('../../models');
 
 // The `/api/tags` endpoint
 
+// get all tags
 router.get('/', async (req, res) => {
-  // find all tags
-  // be sure to include its associated Product data
   try {
-    const tags = await Tag.findAll();
+    const tags = await Tag.findAll({
+      include: Product,
+    });
     res.json(tags);
   } catch (error) {
     console.error('Error fetching tags:', error);
@@ -15,13 +16,27 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', (req, res) => {
-  // find a single tag by its `id`
-  // be sure to include its associated Product data
+// get one tag
+router.get('/:tag_id', async (req, res) => {
+  try {
+    const tagId = req.params.tag_id;
+    const tag = await Tag.findOne({
+      where: { tag_id: tagId },
+      include: Product,
+    });
+    if (tag) {
+      res.json(tag);
+    } else {
+      res.status(404).json({ error: 'Tag not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching tag:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
+// create new tag
 router.post('/', async(req, res) => {
-  // create a new tag
   const { tag_name } = req.body;
   try {
     const newTag = await Tag.create({ tag_name });
@@ -32,12 +47,43 @@ router.post('/', async(req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
-  // update a tag's name by its `id` value
+// update tag
+router.put('/:tag_id', async (req, res) => {
+  const tagId = req.params.tag_id;
+  const { tag_name } = req.body;
+
+  try {
+    const tag = await Tag.findByPk(tagId);
+
+    if (tag) {
+      await Tag.update({ tag_name }, { where: { tag_id: tagId } });
+      res.status(200).json({ message: 'Tag updated successfully' });
+    } else {
+      res.status(404).json({ error: 'Tag not found' });
+    }
+  } catch (error) {
+    console.error('Error updating tag:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  // delete on tag by its `id` value
+// delete tag
+router.delete('/:tag_id', async (req, res) => {
+  const tagId = req.params.tag_id;
+
+  try {
+    const tag = await Tag.findByPk(tagId);
+
+    if (tag) {
+      await Tag.destroy({ where: { tag_id: tagId } });
+      res.status(200).json({ message: 'Tag deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Tag not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting tag:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;
